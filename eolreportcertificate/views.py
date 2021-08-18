@@ -73,7 +73,7 @@ def task_get_data(
         output_buffer.write(codecs.BOM_UTF8)
     csvwriter = csv.writer(output_buffer)
 
-    header = ['Username', 'Run', 'Email', 'Url']
+    header = ['Username', 'Run', 'Email', 'Modo', 'Url']
     csvwriter.writerow(_get_utf8_encoded_row(header))
     csvwriter.writerows(ReportStore()._get_utf8_encoded_rows(students))
 
@@ -156,16 +156,14 @@ class EolReportCertificateView(View):
         students = []
         try:
             enrolled_students = User.objects.filter(
-                courseenrollment__course_id=course_key,
-                courseenrollment__is_active=1,
-                generatedcertificate__status='downloadable'
-            ).order_by('username').values('username', 'email', 'generatedcertificate__verify_uuid', 'edxloginuser__run')
+                generatedcertificate__status='downloadable',
+                generatedcertificate__course_id=course_key
+            ).order_by('username').values('username', 'email', 'generatedcertificate__verify_uuid', 'generatedcertificate__mode', 'edxloginuser__run')
         except FieldError:
             enrolled_students = User.objects.filter(
-                courseenrollment__course_id=course_key,
-                courseenrollment__is_active=1,
-                generatedcertificate__status='downloadable'
-            ).order_by('username').values('username', 'email', 'generatedcertificate__verify_uuid')
+                generatedcertificate__status='downloadable',
+                generatedcertificate__course_id=course_key
+            ).order_by('username').values('username', 'email', 'generatedcertificate__verify_uuid', 'generatedcertificate__mode')
         
         for user in enrolled_students:
             run = ''
@@ -174,7 +172,8 @@ class EolReportCertificateView(View):
             students.append([
                 user['username'],                
                 run,
-                user['email'], 
+                user['email'],
+                user['generatedcertificate__mode'],
                 '{}{}'.format(base_url, reverse('certificates:render_cert_by_uuid', kwargs={'certificate_uuid':user['generatedcertificate__verify_uuid']}))])
         return students
     

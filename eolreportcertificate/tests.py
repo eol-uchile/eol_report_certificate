@@ -138,23 +138,26 @@ class TestEolReportCertificateView(ModuleStoreTestCase):
                 task_input, 'EOL_REPORT_CERTIFICATE'
             )
         report_store = ReportStore.from_config(config_name='GRADES_DOWNLOAD')
-        header_row = ",".join(['Username', 'Run', 'Email', 'Url'])
+        header_row = ",".join(['Username', 'Run', 'Email', 'Modo', 'Url'])
         student1_row = ",".join([
             self.student.username,
             self.student.edxloginuser.run,
             self.student.email,
+            self.gc1.mode,
             '{}{}'.format(task_input['base_url'], reverse('certificates:render_cert_by_uuid', kwargs={'certificate_uuid': self.gc1.verify_uuid}))
         ])
         student2_row = ",".join([
             self.student_2.username,
             '',
             self.student_2.email,
+            self.gc2.mode,
             '{}{}'.format(task_input['base_url'], reverse('certificates:render_cert_by_uuid', kwargs={'certificate_uuid':self.gc2.verify_uuid}))
         ])
         student3_row = ",".join([
             self.student_3.username,
             '',
             self.student_3.email,
+            ''
         ])
         expected_data = [header_row, student1_row, student2_row]
         self._verify_csv_file_report(report_store, expected_data)
