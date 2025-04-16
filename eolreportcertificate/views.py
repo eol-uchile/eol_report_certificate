@@ -1,39 +1,37 @@
 #!/usr/bin/env python
 # -- coding: utf-8 --
-
-from django.conf import settings
-from django.shortcuts import render
-from django.views.generic.base import View
-from opaque_keys.edx.keys import CourseKey, UsageKey
-from django.http import Http404, HttpResponse, JsonResponse
-
-from django.contrib.auth.models import User
-from functools import partial
+# Python Standard Libraries
 from datetime import datetime
+from functools import partial
 from time import time
-from pytz import UTC
-import json
-import six
-
-import logging
 import codecs
 import csv
+import logging
+
+# Installed packages (via pip)
+from celery import task
+from django.contrib.auth.models import User
+from django.core.exceptions import FieldError
+from django.core.files.base import ContentFile
+from django.db import transaction
+from django.http import Http404, JsonResponse
 from django.urls import reverse
-from opaque_keys import InvalidKeyError
-from lms.djangoapps.courseware.courses import get_course_with_access
+from django.utils.translation import ugettext_noop
+from django.views.generic.base import View
+from pytz import UTC
+import six
+
+# Edx dependencies
 from common.djangoapps.util.file import course_filename_prefix_generator
 from lms.djangoapps.courseware.access import has_access
-from django.core.exceptions import FieldError
-from celery import current_task, task
-from lms.djangoapps.instructor_task.tasks_base import BaseInstructorTask
-from lms.djangoapps.instructor_task.api_helper import submit_task
-from lms.djangoapps.instructor_task.tasks_helper.runner import run_main_task, TaskProgress
-from django.db import IntegrityError, transaction
-from django.utils.translation import ugettext_noop
-from lms.djangoapps.instructor_task.api_helper import AlreadyRunningError
-from lms.djangoapps.instructor_task.models import ReportStore
-from django.core.files.base import ContentFile
+from lms.djangoapps.courseware.courses import get_course_with_access
 from lms.djangoapps.instructor import permissions
+from lms.djangoapps.instructor_task.api_helper import AlreadyRunningError, submit_task
+from lms.djangoapps.instructor_task.models import ReportStore
+from lms.djangoapps.instructor_task.tasks_base import BaseInstructorTask
+from lms.djangoapps.instructor_task.tasks_helper.runner import run_main_task, TaskProgress
+from opaque_keys import InvalidKeyError
+from opaque_keys.edx.keys import CourseKey
 
 logger = logging.getLogger(__name__)
 
