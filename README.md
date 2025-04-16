@@ -1,5 +1,8 @@
 # Eol Report Certificate
 
+![Coverage Status](/coverage-badge.svg)
+
+
 ![https://github.com/eol-uchile/eol_report_certificate/actions](https://github.com/eol-uchile/eol_report_certificate/workflows/Python%20application/badge.svg)
 
 Export CSV of Certificates Issued.
@@ -51,9 +54,13 @@ To enable export certificate issued button in your theme add next file and/or li
 ## TESTS
 **Prepare tests:**
 
-    > cd .github/
-    > docker-compose run lms /openedx/requirements/eol_report_certificate/.github/test.sh
+- Install **act** following the instructions in [https://nektosact.com/installation/index.html](https://nektosact.com/installation/index.html)
 
+**Run tests:**
+- In a terminal at the root of the project
+    ```
+    act -W .github/workflows/pythonapp.yml
+    ```
 ## Notes
 
 - Check in edx-platform Lilac version if AlreadyRunningError work
