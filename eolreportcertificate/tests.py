@@ -15,6 +15,7 @@ from common.djangoapps.student.roles import CourseInstructorRole, CourseStaffRol
 from common.djangoapps.student.tests.factories import CourseAccessRoleFactory, CourseEnrollmentFactory, UserFactory
 from lms.djangoapps.certificates.models import GeneratedCertificate
 from lms.djangoapps.instructor_task.models import ReportStore
+from opaque_keys.edx.keys import CourseKey
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
@@ -212,3 +213,18 @@ class TestEolReportCertificateView(ModuleStoreTestCase):
         self.assertTrue(EolReportCertificateView().user_have_permission(self.data_researcher_user, str(self.course.id)))
         self.assertTrue(EolReportCertificateView().user_have_permission(self.user_staff_role, str(self.course.id)))
         self.assertFalse(EolReportCertificateView().user_have_permission(self.student, str(self.course.id)))
+
+    def test_validate_course_with_wrong_course_id(self):
+        """
+            Test validate_course with wrong course_id
+        """
+        result = EolReportCertificateView().validate_course('11111111')
+        self.assertFalse(result)
+
+    def test_is_instructor_or_staff_with_wrong_course_id(self):
+        """
+            Test is_instructor_or_staff with wrong course_id
+        """
+        course_key = CourseKey.from_string('test/11111111/test')
+        result = EolReportCertificateView().is_instructor_or_staff(self.client_instructor,course_key)
+        self.assertFalse(result)
