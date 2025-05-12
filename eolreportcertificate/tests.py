@@ -1,27 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from mock import patch, Mock, MagicMock
-from collections import namedtuple
-from django.urls import reverse
-from django.test import TestCase, Client
-from django.test import Client
-from django.conf import settings
-from django.contrib.auth.models import User
-from opaque_keys.edx.locator import CourseLocator
-from common.djangoapps.student.tests.factories import CourseEnrollmentAllowedFactory, UserFactory, CourseEnrollmentFactory
-from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
-from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
-from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
-from common.djangoapps.student.roles import CourseInstructorRole, CourseStaffRole
-from .views import EolReportCertificateView, task_get_data
-from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
-from common.djangoapps.student.tests.factories import CourseAccessRoleFactory
-from lms.djangoapps.instructor_task.models import ReportStore
-from lms.djangoapps.certificates.models import GeneratedCertificate
-from uchileedxlogin.models import EdxLoginUser
-from unittest.case import SkipTest
-import urllib
+# Python Standard Libraries
 import json
+import urllib
+
+# Installed packages (via pip)
+from django.test import Client
+from django.urls import reverse
+from mock import patch
+from uchileedxlogin.models import EdxLoginUser
+
+# Edx dependencies
+from common.djangoapps.student.roles import CourseInstructorRole, CourseStaffRole 
+from common.djangoapps.student.tests.factories import CourseAccessRoleFactory, CourseEnrollmentFactory, UserFactory
+from lms.djangoapps.certificates.models import GeneratedCertificate
+from lms.djangoapps.instructor_task.models import ReportStore
+from opaque_keys.edx.keys import CourseKey
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory
+
+# Internal project dependencies
+from .views import EolReportCertificateView, task_get_data
 
 class TestEolReportCertificateView(ModuleStoreTestCase):
     def setUp(self):
@@ -213,3 +213,18 @@ class TestEolReportCertificateView(ModuleStoreTestCase):
         self.assertTrue(EolReportCertificateView().user_have_permission(self.data_researcher_user, str(self.course.id)))
         self.assertTrue(EolReportCertificateView().user_have_permission(self.user_staff_role, str(self.course.id)))
         self.assertFalse(EolReportCertificateView().user_have_permission(self.student, str(self.course.id)))
+
+    def test_validate_course_with_wrong_course_id(self):
+        """
+            Test validate_course with wrong course_id
+        """
+        result = EolReportCertificateView().validate_course('11111111')
+        self.assertFalse(result)
+
+    def test_is_instructor_or_staff_with_wrong_course_id(self):
+        """
+            Test is_instructor_or_staff with wrong course_id
+        """
+        course_key = CourseKey.from_string('test/11111111/test')
+        result = EolReportCertificateView().is_instructor_or_staff(self.client_instructor,course_key)
+        self.assertFalse(result)
