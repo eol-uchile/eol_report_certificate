@@ -32,6 +32,7 @@ from lms.djangoapps.instructor_task.tasks_base import BaseInstructorTask
 from lms.djangoapps.instructor_task.tasks_helper.runner import run_main_task, TaskProgress
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +117,7 @@ def _get_utf8_encoded_row(row):
 
 class EolReportCertificateView(View):
     """
-        Return a csv of Certificates Issued
+    Return a csv of Issued Certificates.
     """
     @transaction.non_atomic_requests
     def dispatch(self, args, **kwargs):
@@ -137,7 +138,7 @@ class EolReportCertificateView(View):
 
     def get_data_report(self, request, course_id):
         """
-            Generate report with task_process
+        Generate report with task_process.
         """
         try:
             task = task_process_data(request, course_id)
@@ -149,7 +150,7 @@ class EolReportCertificateView(View):
 
     def get_all_enrolled_users(self, course_key, base_url):
         """
-            Get all enrolled student with Certificates Issued
+        Get all enrolled student with Issued Certificates for course_key.
         """
         students = []
         try:
@@ -176,45 +177,43 @@ class EolReportCertificateView(View):
         return students
     
     def validate_data(self, user, course_id):
+        """
+        Validates the course_id and the user permissions.
+        """
         error = {}
-        # valida curso
         if course_id == "":
             logger.error("EolReportCertificate - Empty course, user: {}".format(user.id))
             error['empty_course'] = True
-       
-        # valida si existe el curso
         else:
             if not self.validate_course(course_id):
-                logger.error("EolReportCertificate - Course dont exists, user: {}, course_id: {}".format(user.id, course_id))
+                logger.error("EolReportCertificate - Course doesn't exists, user: {}, course_id: {}".format(user.id, course_id))
                 error['error_curso'] = True
             else:
-                # valida permisos de usuario
                 if not self.user_have_permission(user, course_id):
-                    logger.error("EolReportCertificate - user dont have permission in the course, course: {}, user: {}".format(course_id, user))
+                    logger.error("EolReportCertificate - User doesn't have permission in the course, course: {}, user: {}".format(course_id, user))
                     error['user_permission'] = True
         return error
     
-    def validate_course(self, id_curso):
+    def validate_course(self, course_id):
         """
-            Verify if course.id exists
+        Verify if course_id exists.
         """
-        from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
         try:
-            aux = CourseKey.from_string(id_curso)
+            aux = CourseKey.from_string(course_id)
             return CourseOverview.objects.filter(id=aux).exists()
         except InvalidKeyError:
             return False
 
     def user_have_permission(self, user, course_id):
         """
-            Verify if user is instructor, staff_course or superuser
+        Verify if user is instructor, staff_course, data researcher or superuser.
         """
         course_key = CourseKey.from_string(course_id)
         return self.is_instructor_or_staff(user, course_key) or user.is_staff
 
     def is_instructor_or_staff(self, user, course_key):
         """
-            Verify if the user is instructor or staff course or data researcher
+        Verify if the user is instructor, staff course or data researcher.
         """
         try:
             course = get_course_with_access(user, "load", course_key)
