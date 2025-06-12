@@ -11,7 +11,6 @@ import logging
 # Installed packages (via pip)
 from celery import task
 from django.contrib.auth.models import User
-from django.core.exceptions import FieldError
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.http import Http404, JsonResponse
@@ -19,6 +18,7 @@ from django.urls import reverse
 from django.utils.translation import ugettext_noop
 from django.views.generic.base import View
 from pytz import UTC
+from uchileedxlogin.services.interface import get_doc_id_by_user_id
 import six
 
 # Edx dependencies
@@ -153,24 +153,21 @@ class EolReportCertificateView(View):
         Get all enrolled student with Issued Certificates for course_key.
         """
         students = []
-        try:
-            enrolled_students = User.objects.filter(
-                generatedcertificate__status='downloadable',
-                generatedcertificate__course_id=course_key
-            ).order_by('username').values('username', 'email', 'generatedcertificate__verify_uuid', 'generatedcertificate__mode', 'edxloginuser__run')
-        except FieldError:
-            enrolled_students = User.objects.filter(
-                generatedcertificate__status='downloadable',
-                generatedcertificate__course_id=course_key
-            ).order_by('username').values('username', 'email', 'generatedcertificate__verify_uuid', 'generatedcertificate__mode')
-        
+        enrolled_students = User.objects.filter(
+            generatedcertificate__status='downloadable',
+            generatedcertificate__course_id=course_key
+        ).order_by('username').values('username', 'email', 'generatedcertificate__verify_uuid', 'generatedcertificate__mode')
+        username_list = enrolled_students.values_list('username', flat=True)
+        doc_id_username = get_doc_id_by_user_id(username_list)
+        if doc_id_username != []:
+            username_doc_id_dict = {username: doc_id for username, doc_id in doc_id_username}
+        else:
+            username_doc_id_dict = {}
         for user in enrolled_students:
-            run = ''
-            if 'edxloginuser__run' in user and user['edxloginuser__run'] != None:
-                run = user['edxloginuser__run']
+            user['doc_id'] = username_doc_id_dict.get(user['username'], '')
             students.append([
                 user['username'],                
-                run,
+                user['doc_id'],
                 user['email'],
                 user['generatedcertificate__mode'],
                 '{}{}'.format(base_url, reverse('certificates:render_cert_by_uuid', kwargs={'certificate_uuid':user['generatedcertificate__verify_uuid']}))])
