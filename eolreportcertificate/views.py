@@ -72,7 +72,7 @@ def task_get_data(
         output_buffer.write(codecs.BOM_UTF8)
     csvwriter = csv.writer(output_buffer)
 
-    header = ['Username', 'Run', 'Email', 'Modo', 'Url']
+    header = ['Username', 'Documento_id', 'Email', 'Modo', 'Url']
     csvwriter.writerow(_get_utf8_encoded_row(header))
     csvwriter.writerows(ReportStore()._get_utf8_encoded_rows(students))
 

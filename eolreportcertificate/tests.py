@@ -138,7 +138,7 @@ class TestEolReportCertificateView(ModuleStoreTestCase):
                 task_input, 'EOL_REPORT_CERTIFICATE'
             )
         report_store = ReportStore.from_config(config_name='GRADES_DOWNLOAD')
-        header_row = ",".join(['Username', 'Run', 'Email', 'Modo', 'Url'])
+        header_row = ",".join(['Username', 'Documento_id', 'Email', 'Modo', 'Url'])
         student1_row = ",".join([
             self.student.username,
             self.student.edxlogin_user.doc_id,
