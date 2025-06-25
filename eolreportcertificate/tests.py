@@ -8,7 +8,7 @@ import urllib
 from django.test import Client
 from django.urls import reverse
 from mock import patch
-from uchileedxlogin.models import EdxLoginUser
+from uchileedxlogin.services.test_utils import create_edxloginuser
 
 # Edx dependencies
 from common.djangoapps.student.roles import CourseInstructorRole, CourseStaffRole 
@@ -55,7 +55,7 @@ class TestEolReportCertificateView(ModuleStoreTestCase):
                 username='student',
                 password='test',
                 email='student@edx.org')
-            EdxLoginUser.objects.create(user=self.student, run='09472337K')
+            self.student.edxlogin_user = create_edxloginuser(self.student, '09472337K')
             self.gc1 = GeneratedCertificate.objects.create(user=self.student, course_id=self.course.id, verify_uuid='12350e8c6d464bb395a1fb39013ba4f4', status='downloadable', mode='honor')
             self.student_2 = UserFactory(
                 username='student_2',
@@ -138,10 +138,10 @@ class TestEolReportCertificateView(ModuleStoreTestCase):
                 task_input, 'EOL_REPORT_CERTIFICATE'
             )
         report_store = ReportStore.from_config(config_name='GRADES_DOWNLOAD')
-        header_row = ",".join(['Username', 'Run', 'Email', 'Modo', 'Url'])
+        header_row = ",".join(['Username', 'Documento_id', 'Email', 'Modo', 'Url'])
         student1_row = ",".join([
             self.student.username,
-            self.student.edxloginuser.run,
+            self.student.edxlogin_user.doc_id,
             self.student.email,
             self.gc1.mode,
             '{}{}'.format(task_input['base_url'], reverse('certificates:render_cert_by_uuid', kwargs={'certificate_uuid': self.gc1.verify_uuid}))
