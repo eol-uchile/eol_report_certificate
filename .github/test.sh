@@ -1,7 +1,7 @@
 #!/bin/dash
 set -e
 
-pip install --src /openedx/venv/src -e git+https://github.com/eol-uchile/uchileedxlogin@0.0.1#egg=uchileedxlogin
+pip install --src /openedx/venv/src -e git+https://github.com/eol-uchile/uchileedxlogin@1.0.0#egg=uchileedxlogin
 pip install --src /openedx/venv/src -e /openedx/requirements/app
 pip install pytest-cov genbadge[coverage]
 

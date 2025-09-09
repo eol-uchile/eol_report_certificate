@@ -8,7 +8,6 @@ import urllib
 from django.test import Client
 from django.urls import reverse
 from mock import patch
-from uchileedxlogin.models import EdxLoginUser
 
 # Edx dependencies
 from common.djangoapps.student.roles import CourseInstructorRole, CourseStaffRole 
@@ -55,7 +54,6 @@ class TestEolReportCertificateView(ModuleStoreTestCase):
                 username='student',
                 password='test',
                 email='student@edx.org')
-            EdxLoginUser.objects.create(user=self.student, run='09472337K')
             self.gc1 = GeneratedCertificate.objects.create(user=self.student, course_id=self.course.id, verify_uuid='12350e8c6d464bb395a1fb39013ba4f4', status='downloadable', mode='honor')
             self.student_2 = UserFactory(
                 username='student_2',
@@ -127,10 +125,32 @@ class TestEolReportCertificateView(ModuleStoreTestCase):
         request = response.request
         self.assertEqual(response.status_code, 405)
 
-    def test_eolreportcertificate_get(self):
+    @patch('eolreportcertificate.views.get_user_id_doc_id_pairs')
+    def test_get_enrolled_users_with_doc_id(self, mock_user_id_doc_id_pair):
+        """
+        Test get_all_enrolled_users when the users have a doc_id associated with them.
+        """
+        mock_user_id_doc_id_pair.return_value = [(self.student.id, '1234567K'), (self.student_2.id, '12345678')]
+        enrolled_users = EolReportCertificateView().get_all_enrolled_users(self.course.id, 'this_is_a_url')
+        self.assertEqual(enrolled_users[0][1], '1234567K')
+        self.assertEqual(enrolled_users[1][1], '12345678')
+
+    @patch('eolreportcertificate.views.get_user_id_doc_id_pairs')
+    def test_get_enrolled_users_without_doc_id(self, mock_user_id_doc_id_pair):
+        """
+        Test get_all_enrolled_users when the users doesn't have a doc_id associated with them.
+        """
+        mock_user_id_doc_id_pair.return_value = []
+        enrolled_users = EolReportCertificateView().get_all_enrolled_users(self.course.id, 'this_is_a_url')
+        self.assertEqual(enrolled_users[0][1], '')
+        self.assertEqual(enrolled_users[1][1], '')
+
+    @patch('eolreportcertificate.views.get_user_id_doc_id_pairs')
+    def test_eolreportcertificate_get(self, mock_user_id_doc_id_pair):
         """
             Test eolreportcertificate get normal process
         """
+        mock_user_id_doc_id_pair.return_value = [(self.student.id, '09472337K')]
         task_input = {'base_url': 'this_is_a_url'}
         with patch('lms.djangoapps.instructor_task.tasks_helper.runner._get_current_task'):
             result = task_get_data(
@@ -141,7 +161,7 @@ class TestEolReportCertificateView(ModuleStoreTestCase):
         header_row = ",".join(['Username', 'Run', 'Email', 'Modo', 'Url'])
         student1_row = ",".join([
             self.student.username,
-            self.student.edxloginuser.run,
+            '09472337K',
             self.student.email,
             self.gc1.mode,
             '{}{}'.format(task_input['base_url'], reverse('certificates:render_cert_by_uuid', kwargs={'certificate_uuid': self.gc1.verify_uuid}))
