@@ -125,32 +125,32 @@ class TestEolReportCertificateView(ModuleStoreTestCase):
         request = response.request
         self.assertEqual(response.status_code, 405)
 
-    @patch('eolreportcertificate.views.get_user_id_doc_id_pairs')
-    def test_get_enrolled_users_with_doc_id(self, mock_user_id_doc_id_pair):
+    @patch('eolreportcertificate.views.get_user_id_with_indiv_id_list')
+    def test_get_enrolled_users_with_indiv_id(self, mock_user_id_with_indiv_id_list):
         """
-        Test get_all_enrolled_users when the users have a doc_id associated with them.
+        Test get_all_enrolled_users when the users have a indiv_id associated with them.
         """
-        mock_user_id_doc_id_pair.return_value = [(self.student.id, '1234567K'), (self.student_2.id, '12345678')]
+        mock_user_id_with_indiv_id_list.return_value = [(self.student.id, '1234567K'), (self.student_2.id, '12345678')]
         enrolled_users = EolReportCertificateView().get_all_enrolled_users(self.course.id, 'this_is_a_url')
         self.assertEqual(enrolled_users[0][1], '1234567K')
         self.assertEqual(enrolled_users[1][1], '12345678')
 
-    @patch('eolreportcertificate.views.get_user_id_doc_id_pairs')
-    def test_get_enrolled_users_without_doc_id(self, mock_user_id_doc_id_pair):
+    @patch('eolreportcertificate.views.get_user_id_with_indiv_id_list')
+    def test_get_enrolled_users_without_indiv_id(self, mock_user_id_with_indiv_id_list):
         """
-        Test get_all_enrolled_users when the users doesn't have a doc_id associated with them.
+        Test get_all_enrolled_users when the users doesn't have a indiv_id associated with them.
         """
-        mock_user_id_doc_id_pair.return_value = []
+        mock_user_id_with_indiv_id_list.return_value = []
         enrolled_users = EolReportCertificateView().get_all_enrolled_users(self.course.id, 'this_is_a_url')
         self.assertEqual(enrolled_users[0][1], '')
         self.assertEqual(enrolled_users[1][1], '')
 
-    @patch('eolreportcertificate.views.get_user_id_doc_id_pairs')
-    def test_eolreportcertificate_get(self, mock_user_id_doc_id_pair):
+    @patch('eolreportcertificate.views.get_user_id_with_indiv_id_list')
+    def test_eolreportcertificate_get(self, mock_user_id_with_indiv_id_list):
         """
             Test eolreportcertificate get normal process
         """
-        mock_user_id_doc_id_pair.return_value = [(self.student.id, '09472337K')]
+        mock_user_id_with_indiv_id_list.return_value = [(self.student.id, '09472337K')]
         task_input = {'base_url': 'this_is_a_url'}
         with patch('lms.djangoapps.instructor_task.tasks_helper.runner._get_current_task'):
             result = task_get_data(
