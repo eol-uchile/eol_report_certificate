@@ -18,7 +18,7 @@ from django.urls import reverse
 from django.utils.translation import ugettext_noop
 from django.views.generic.base import View
 from pytz import UTC
-from uchileedxlogin.services.interface import get_user_id_doc_id_pairs
+from eol_sso.services.interface import get_user_id_with_indiv_id_list
 import six
 
 # Edx dependencies
@@ -158,13 +158,13 @@ class EolReportCertificateView(View):
             generatedcertificate__course_id=course_key
         ).order_by('username').values('id', 'username', 'email', 'generatedcertificate__verify_uuid', 'generatedcertificate__mode')
         user_id_list = enrolled_students.values_list('id', flat=True)
-        user_doc_id = get_user_id_doc_id_pairs(user_id_list)
-        user_doc_id_dict = {id: doc_id for id, doc_id in user_doc_id}
+        user_indiv_id_list = get_user_id_with_indiv_id_list(user_id_list)
+        user_indiv_id_dict = {id: indiv_id for id, indiv_id in user_indiv_id_list}
         for user in enrolled_students:
-            user['doc_id'] = user_doc_id_dict.get(user['id'], '')
+            user['indiv_id'] = user_indiv_id_dict.get(user['id'], '')
             students.append([
                 user['username'],                
-                user['doc_id'],
+                user['indiv_id'],
                 user['email'],
                 user['generatedcertificate__mode'],
                 '{}{}'.format(base_url, reverse('certificates:render_cert_by_uuid', kwargs={'certificate_uuid':user['generatedcertificate__verify_uuid']}))])
