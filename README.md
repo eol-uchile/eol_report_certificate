@@ -14,42 +14,46 @@ Export CSV of Certificates Issued.
 
 # Install Theme
 
-To enable export certificate issued button in your theme add next file and/or lines code:
+To enable the export issued certificates button, add the following code to your theme. This includes a conditional check to ensure the template only renders if the app is installed.
 
 - _../themes/your_theme/lms/templates/instructor/instructor_dashboard_2/data_download.html_
 
-    **add the script and css**
+    **add eol_report_certificate template to the data_download template**
 
-        <script type="text/javascript" src="${static.url('eolreportcertificate/js/eolreportcertificate.js')}"></script>
-        <link rel="stylesheet" type="text/css" href="${static.url('eolreportcertificate/css/eolreportcertificate.css')}"/>
-
-    **and add html button**
-
-        <div class="issued_certificates">
-            ...
-            <p>
-                ...
-                %if 'has_eolreportcertificate' in section_data and section_data['has_eolreportcertificate']:
-                    <input type="button" name="issued-certificates-eol" onclick="generate_eolreportcertificate(this)" value="${_("(Nuevo) Descargar Reporte de Certificados")}" data-endpoint="${ section_data['eolreportcertificate_url'] }">
-                %endif
-            </p>
-            %if 'has_eolreportcertificate' in section_data and section_data['has_eolreportcertificate']:
-                <div class="eolreportcertificate-success-msg" id="eolreportcertificate-success-msg"></div>
-                <div class="eolreportcertificate-warning-msg" id="eolreportcertificate-warning-msg"></div>
-                <div class="eolreportcertificate-error-msg" id="eolreportcertificate-error-msg"></div>
-            %endif
-            ...
-        </div>
-
-- In your edx-platform add the following code in the function '_section_data_download' in _edx-platform/lms/djangoapps/instructor/views/instructor_dashboard.py_
-
+        <%
+        eolreportcertificate_url = None
+        eolreportcertificate_traceback = None
         try:
-            from eolreportcertificate import views
-            import urllib
-            section_data['has_eolreportcertificate'] = True
-            section_data['eolreportcertificate_url'] = '{}?{}'.format(reverse('eolreportcertificate-export:data'), urllib.parse.urlencode({'course': str(course_key)}))
-        except ImportError:
-            section_data['has_eolreportcertificate'] = False
+          eolreportcertificate_url = reverse('eolreportcertificate-export:data')
+        except Exception:
+          if settings.DEBUG:
+            eolreportcertificate_traceback = traceback.format_exc()
+        %>  
+        %if eolreportcertificate_traceback:
+          <div class="eolreportcertificate_traceback">
+          <pre>${eolreportcertificate_traceback}</pre>
+          </div>
+        %elif eolreportcertificate_url:
+          <%include file="eol_report_certificate.html"/>
+        %endif
+
+### Adding new translations:
+
+To extract and update any new translatable text, run the update command below. After manually filling in the new translations, run the compile command to update the .mo translation files.
+
+### Commands
+
+**Update**
+
+    docker run -it --rm -w /code -v $(pwd):/code python:3.8 bash
+    pip install -r requirements-i18n.in
+    make update_translations
+
+**Compile**
+
+    docker run -it --rm -w /code -v $(pwd):/code python:3.8 bash
+    pip install -r requirements-i18n.in
+    make compile_translations
 
 ## TESTS
 **Prepare tests:**

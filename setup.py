@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="eolreportcertificate",
-    version="2.0.0",
+    version="2.1.0",
     author="Oficina EOL UChile",
     author_email="eol-ing@uchile.cl",
     description="Allows you to download a csv of Certificates Issued",

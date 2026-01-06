@@ -1,0 +1,32 @@
+# Spanish (Latin America) translations for EOL.
+# Copyright (C) 2025 EOL
+# This file is distributed under the same license as the EOL project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: EOL 1.0.0\n"
+"Report-Msgid-Bugs-To: eol-ing@uchile.cl\n"
+"POT-Creation-Date: 2025-12-22 16:15+0000\n"
+"PO-Revision-Date: 2025-12-22 16:14+0000\n"
+"Last-Translator: EOL <eol-ing@uchile.cl>\n"
+"Language: es_419\n"
+"Language-Team: es_419 <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: eolreportcertificate/templates/instructor/instructor_dashboard_2/eol_report_certificate.html:17
+msgid ""
+"Generates a report containing the issued certificates for each user in "
+"this course"
+msgstr ""
+"Genera un reporte con los certificados emitidos para cada usuario en este"
+" curso"
+
+#: eolreportcertificate/templates/instructor/instructor_dashboard_2/eol_report_certificate.html:19
+msgid "Download report certificate"
+msgstr "Descargar reporte de certificados"
+
