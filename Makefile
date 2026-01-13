@@ -25,6 +25,6 @@ update_translations: ## update strings to be translated
 	rm eolreportcertificate/locale/django.pot
 	rm eolreportcertificate/locale/django-js.pot
 
-compile_translations: ## compile .mo files into .po files
+compile_translations: ## compile .po files into .mo files
 	pybabel compile -f -D django -d eolreportcertificate/locale/; \
 	pybabel compile -f -D djangojs -d eolreportcertificate/locale/
